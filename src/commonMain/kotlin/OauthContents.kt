@@ -4,9 +4,53 @@ import io.ktor.http.*
 import io.ktor.http.auth.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import net.lsafer.oidc.oauth.OAuth
 
+/**
+ * Add an Oauth Challenge indicating an oauth `insufficient_scope` error.
+ */
+fun ApplicationCall.challengeInsufficientScope(
+    realm: String,
+    scope: String? = null,
+    description: String? = null,
+) {
+    authentication.challenge(OauthChallengeKey, AuthenticationFailedCause.InvalidCredentials) { challenge, call ->
+        call.respondInsufficientScope(realm, scope, description)
+        challenge.complete()
+    }
+}
+
+/**
+ * Add an Oauth Challenge indicating an oauth `invalid_token` error.
+ */
+fun ApplicationCall.challengeInvalidToken(
+    realm: String,
+    description: String? = null,
+) {
+    authentication.challenge(OauthChallengeKey, AuthenticationFailedCause.InvalidCredentials) { challenge, call ->
+        call.respondInvalidToken(realm, description)
+        challenge.complete()
+    }
+}
+
+/**
+ * Add an Oauth Challenge indicating an oauth `invalid_request` error.
+ */
+fun ApplicationCall.challengeInvalidRequest(
+    realm: String,
+    description: String? = null,
+) {
+    authentication.challenge(OauthChallengeKey, AuthenticationFailedCause.InvalidCredentials) { challenge, call ->
+        call.respondInvalidRequest(realm, description)
+        challenge.complete()
+    }
+}
+
+/**
+ * Respond an Oauth Challenge indicating an oauth `insufficient_scope` error.
+ */
 suspend fun ApplicationCall.respondInsufficientScope(
     realm: String,
     scope: String? = null,
@@ -15,6 +59,9 @@ suspend fun ApplicationCall.respondInsufficientScope(
     respond(OauthInsufficientScopeContent(realm, scope, description))
 }
 
+/**
+ * Respond an Oauth Challenge indicating an oauth `invalid_token` error.
+ */
 suspend fun ApplicationCall.respondInvalidToken(
     realm: String,
     description: String? = null,
@@ -22,6 +69,9 @@ suspend fun ApplicationCall.respondInvalidToken(
     respond(OauthInvalidTokenContent(realm, description))
 }
 
+/**
+ * Respond an Oauth Challenge indicating an oauth `invalid_request` error.
+ */
 suspend fun ApplicationCall.respondInvalidRequest(
     realm: String,
     description: String? = null,
@@ -29,6 +79,9 @@ suspend fun ApplicationCall.respondInvalidRequest(
     respond(OauthInvalidRequestContent(realm, description))
 }
 
+/**
+ * An oauth empty response challenge with `insufficient_scope` error.
+ */
 class OauthInsufficientScopeContent(
     realm: String,
     scope: String? = null,
@@ -52,6 +105,9 @@ class OauthInsufficientScopeContent(
     }
 }
 
+/**
+ * An oauth empty response challenge with `invalid_token` error.
+ */
 class OauthInvalidTokenContent(
     realm: String,
     description: String? = null,
@@ -72,6 +128,9 @@ class OauthInvalidTokenContent(
     }
 }
 
+/**
+ * An oauth empty response challenge with `invalid_request` error.
+ */
 class OauthInvalidRequestContent(
     realm: String,
     description: String? = null,

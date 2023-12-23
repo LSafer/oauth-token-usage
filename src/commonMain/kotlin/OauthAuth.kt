@@ -3,6 +3,8 @@ package net.lsafer.oauth
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 
+val OauthChallengeKey: Any = "OauthChallenge"
+
 fun AuthenticationConfig.oauth(
     name: String? = null,
     block: OauthAuthenticationProvider.Config.() -> Unit,
@@ -21,7 +23,7 @@ class OauthAuthenticationProvider(config: Config) : AuthenticationProvider(confi
         val credentials = context.call.receiveOauthCredentialsSet()
 
         if (credentials.isEmpty()) {
-            context.challenge(challengeKey, AuthenticationFailedCause.NoCredentials) { challenge, call ->
+            context.challenge(OauthChallengeKey, AuthenticationFailedCause.NoCredentials) { challenge, call ->
                 call.respondInvalidToken(realm)
                 challenge.complete()
             }
@@ -29,7 +31,7 @@ class OauthAuthenticationProvider(config: Config) : AuthenticationProvider(confi
         }
 
         if (credentials.size != 1) {
-            context.challenge(challengeKey, AuthenticationFailedCause.InvalidCredentials) { challenge, call ->
+            context.challenge(OauthChallengeKey, AuthenticationFailedCause.InvalidCredentials) { challenge, call ->
                 call.respondInvalidRequest(realm)
                 challenge.complete()
             }
@@ -39,7 +41,12 @@ class OauthAuthenticationProvider(config: Config) : AuthenticationProvider(confi
         val principal = authenticate(context.call, credentials.single())
 
         if (principal == null) {
-            context.challenge(challengeKey, AuthenticationFailedCause.InvalidCredentials) { challenge, call ->
+            // a failure has been added! do not add one
+            @Suppress("DEPRECATION_ERROR")
+            if (OauthChallengeKey in context.errors)
+                return
+
+            context.challenge(OauthChallengeKey, AuthenticationFailedCause.InvalidCredentials) { challenge, call ->
                 call.respondInvalidToken(realm)
                 challenge.complete()
             }
@@ -63,5 +70,3 @@ class OauthAuthenticationProvider(config: Config) : AuthenticationProvider(confi
         }
     }
 }
-
-private val challengeKey: Any = "OauthAuth"
