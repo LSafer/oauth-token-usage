@@ -19,7 +19,7 @@ suspend fun ApplicationCall.respondInvalidToken(
     realm: String,
     description: String? = null,
 ) {
-    respond(OauthInvalidTokeContent(realm, description))
+    respond(OauthInvalidTokenContent(realm, description))
 }
 
 suspend fun ApplicationCall.respondInvalidRequest(
@@ -52,7 +52,7 @@ class OauthInsufficientScopeContent(
     }
 }
 
-class OauthInvalidTokeContent(
+class OauthInvalidTokenContent(
     realm: String,
     description: String? = null,
 ) : OutgoingContent.NoContent() {
