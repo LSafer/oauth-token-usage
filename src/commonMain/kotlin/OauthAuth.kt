@@ -25,6 +25,7 @@ class OauthAuthenticationProvider(config: Config) : AuthenticationProvider(confi
                 call.respondInvalidToken(realm)
                 challenge.complete()
             }
+            return
         }
 
         if (credentials.size != 1) {
@@ -32,6 +33,7 @@ class OauthAuthenticationProvider(config: Config) : AuthenticationProvider(confi
                 call.respondInvalidRequest(realm)
                 challenge.complete()
             }
+            return
         }
 
         val principal = authenticate(context.call, credentials.single())
